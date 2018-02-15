@@ -194,7 +194,7 @@ void IMUCompass::magCallback(const sensor_msgs::MagneticFieldConstPtr& data) {
   curr_imu_meas = curr_imu_meas * transform;
   tf::Quaternion orig (transform.getRotation());
 
-  // Till Compensation
+  // Tilt Compensation
   tf::Matrix3x3 temp(curr_imu_meas.getRotation());
 
   double c_r, c_p, c_y;
