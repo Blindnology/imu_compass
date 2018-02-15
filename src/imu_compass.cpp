@@ -231,7 +231,7 @@ void IMUCompass::magCallback(const sensor_msgs::MagneticFieldConstPtr& data) {
     curr_heading_variance_ = (1 - kalman_gain) * heading_variance_prediction_; // S = (1-K*C)*Sp
 
     std_msgs::Float32 raw_heading_float;
-    raw_heading_float.data = heading_meas;
+    raw_heading_float.data = heading_meas * 180 / M_PI;
     raw_compass_pub_.publish(raw_heading_float);
 
     repackageImuPublish(transform);
@@ -266,7 +266,7 @@ void IMUCompass::repackageImuPublish(tf::StampedTransform transform) {
 
   // Publish all data
   std_msgs::Float32 curr_heading_float;
-  curr_heading_float.data = compass_heading;
+  curr_heading_float.data = compass_heading * 180 / M_PI;
   compass_pub_.publish(curr_heading_float);
   imu_pub_.publish(curr_imu_reading_);
 }
