@@ -26,7 +26,7 @@ Header file for IMU Compass Class that combines gyroscope and magnetometer data 
 #include "tf/transform_listener.h"
 
 #include "sensor_msgs/Imu.h"
-#include "geometry_msgs/Vector3Stamped.h"
+#include "sensor_msgs/MagneticField.h"
 #include "std_msgs/Float32.h"
 
 //typedef boost::shared_ptr<sensor_msgs::Imu const> ImuConstPtr;
@@ -49,7 +49,7 @@ private:
 
   void imuCallback(sensor_msgs::ImuPtr data);
   void declCallback(const std_msgs::Float32& data);
-  void magCallback(const geometry_msgs::Vector3StampedConstPtr& data);
+	void magCallback(const sensor_msgs::MagneticFieldConstPtr& data);
   void debugCallback(const ros::TimerEvent&);
   void repackageImuPublish(tf::StampedTransform);
 

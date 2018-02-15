@@ -52,7 +52,7 @@ IMUCompass::IMUCompass(ros::NodeHandle &n, ros::NodeHandle &pn) :
   decl_sub_ = node_.subscribe("imu/declination", 1000, &IMUCompass::declCallback, this);
   imu_pub_ = node_.advertise<sensor_msgs::Imu>("imu/data_compass", 1);
   compass_pub_ = node_.advertise<std_msgs::Float32>("imu/compass_heading", 1);
-  mag_pub_ = node_.advertise<geometry_msgs::Vector3Stamped>("imu/mag_calib", 1);
+  mag_pub_ = node_.advertise<sensor_msgs::MagneticField>("imu/mag_calib", 1);
 
   raw_compass_pub_ = node_.advertise<std_msgs::Float32>("imu/raw_compass_heading", 1);
 
@@ -130,21 +130,21 @@ void IMUCompass::declCallback(const std_msgs::Float32& data) {
   ROS_INFO("Using magnetic declination %f (%f degrees)", mag_declination_, mag_declination_ * 180 / M_PI);
 }
 
-void IMUCompass::magCallback(const geometry_msgs::Vector3StampedConstPtr& data) {
-  geometry_msgs::Vector3 imu_mag = data->vector;
+void IMUCompass::magCallback(const sensor_msgs::MagneticFieldConstPtr& data) {
+  geometry_msgs::Vector3 imu_mag = data->magnetic_field;
   geometry_msgs::Vector3 imu_mag_transformed;
 
   // Check for nans and bail
-  if ( std::isnan(data->vector.x) ||
-       std::isnan(data->vector.y) ||
-       std::isnan(data->vector.z) ) {
+  if ( std::isnan(data->magnetic_field.x) ||
+       std::isnan(data->magnetic_field.y) ||
+       std::isnan(data->magnetic_field.z) ) {
     ROS_WARN_THROTTLE(1, "Magnetic field data is NaN.");
     return;
   }
 
-  imu_mag.x = data->vector.x;
-  imu_mag.y = data->vector.y;
-  imu_mag.z = data->vector.z;
+  imu_mag.x = data->magnetic_field.x;
+  imu_mag.y = data->magnetic_field.y;
+  imu_mag.z = data->magnetic_field.z;
 
   last_measurement_update_time_ = ros::Time::now().toSec();
   tf::StampedTransform transform;
@@ -172,13 +172,13 @@ void IMUCompass::magCallback(const geometry_msgs::Vector3StampedConstPtr& data) 
   mag_y = calib_mag.y();
   mag_z = calib_mag.z();
 
-  geometry_msgs::Vector3Stamped calibrated_mag;
+  sensor_msgs::MagneticField calibrated_mag;
   calibrated_mag.header.stamp = ros::Time::now();
   calibrated_mag.header.frame_id = "imu_link";
 
-  calibrated_mag.vector.x = calib_mag.x();
-  calibrated_mag.vector.y = calib_mag.y();
-  calibrated_mag.vector.z = calib_mag.z();
+  calibrated_mag.magnetic_field.x = calib_mag.x();
+  calibrated_mag.magnetic_field.y = calib_mag.y();
+  calibrated_mag.magnetic_field.z = calib_mag.z();
 
   mag_pub_.publish(calibrated_mag);
 
