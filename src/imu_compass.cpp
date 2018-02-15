@@ -47,10 +47,10 @@ IMUCompass::IMUCompass(ros::NodeHandle &n, ros::NodeHandle &pn) :
   ROS_INFO("Using magnetic declination %f (%f degrees)", mag_declination_, mag_declination_ * 180 / M_PI);
 
   // Setup Subscribers
-  imu_sub_ = node_.subscribe("imu/data", 1000, &IMUCompass::imuCallback, this);
+  imu_sub_ = node_.subscribe("imu/data_raw", 1000, &IMUCompass::imuCallback, this);
   mag_sub_ = node_.subscribe("imu/mag", 1000, &IMUCompass::magCallback, this);
   decl_sub_ = node_.subscribe("imu/declination", 1000, &IMUCompass::declCallback, this);
-  imu_pub_ = node_.advertise<sensor_msgs::Imu>("imu/data_compass", 1);
+  imu_pub_ = node_.advertise<sensor_msgs::Imu>("imu/data", 1);
   compass_pub_ = node_.advertise<std_msgs::Float32>("imu/compass_heading", 1);
   mag_pub_ = node_.advertise<sensor_msgs::MagneticField>("imu/mag_calib", 1);
 
@@ -181,6 +181,11 @@ void IMUCompass::magCallback(const sensor_msgs::MagneticFieldConstPtr& data) {
   calibrated_mag.magnetic_field.z = calib_mag.z();
 
   mag_pub_.publish(calibrated_mag);
+
+  // Check for zero quaternion
+  geometry_msgs::Quaternion &quat = curr_imu_reading_->orientation;
+  if (quat.x == 0.0 && quat.y == 0.0 &&	quat.z == 0.0 && quat.w == 0.0)
+    quat.w = 1.0;
 
   tf::Quaternion q;
   tf::quaternionMsgToTF(curr_imu_reading_->orientation, q);
